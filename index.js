@@ -66,32 +66,26 @@ async function run() {
       const id = req.params.id;
       console.log(id);
       const filter = { _id: new ObjectId(id) };
-      const options = { upsert: true };
-      const query = { role: req.body };
-      const alreadyAdmin = await usersCollection.findOne(query);
-      console.log("alreadyAdmin", alreadyAdmin);
-      if (alreadyAdmin) {
-        const updateRole = {
-          $set: {
-            role: "instructor",
-          },
-        };
-        const result = await usersCollection.updateOne(
-          filter,
-          updateRole,
-        );
-        return res.send(result);
+      const query = req.body.role;
+      console.log(query);
+      if (query === 'instructor') {
+        console.log('make instructor');
+        return res.send({ message: "making!" });
       }
-      const updateRole = {
-        $set: {
-          role: "admin",
-        },
-      };
-      const result = await usersCollection.updateOne(
-        filter,
-        updateRole,
-      );
-      res.send(result);
+      // const alreadyAdmin = await usersCollection.findOne(query);
+      // if (alreadyAdmin) {
+      //   return res.send({ message: "This user is already admin!" });
+      // }
+      // const updateRole = {
+      //   $set: {
+      //     role: "admin",
+      //   },
+      // };
+      // const result = await usersCollection.updateOne(
+      //   filter,
+      //   updateRole,
+      // );
+      // res.send(result);
     });
 
     // Send a ping to confirm a successful connection
