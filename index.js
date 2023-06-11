@@ -8,7 +8,7 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.tbmpk5j.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -54,11 +54,43 @@ async function run() {
       console.log(user);
       const query = { email: user.email };
       const alreadyUsers = await usersCollection.findOne(query);
-      console.log('alreadyUsers',alreadyUsers)
+      console.log("alreadyUsers", alreadyUsers);
       if (alreadyUsers) {
         return res.send({ message: "This user is already exists!" });
       }
       const result = await usersCollection.insertOne(user);
+      res.send(result);
+    });
+
+    app.patch("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const query = { role: req.body };
+      const alreadyAdmin = await usersCollection.findOne(query);
+      console.log("alreadyAdmin", alreadyAdmin);
+      if (alreadyAdmin) {
+        const updateRole = {
+          $set: {
+            role: "instructor",
+          },
+        };
+        const result = await usersCollection.updateOne(
+          filter,
+          updateRole,
+        );
+        return res.send(result);
+      }
+      const updateRole = {
+        $set: {
+          role: "admin",
+        },
+      };
+      const result = await usersCollection.updateOne(
+        filter,
+        updateRole,
+      );
       res.send(result);
     });
 
