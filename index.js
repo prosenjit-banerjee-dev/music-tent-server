@@ -26,6 +26,7 @@ async function run() {
     await client.connect();
     const instructorCollection = client.db("musicDB").collection("instructors");
     const classesCollection = client.db("musicDB").collection("classes");
+    const usersCollection = client.db("musicDB").collection("users");
 
     //instructor collections
     app.get("/instructors", async (req, res) => {
@@ -33,10 +34,28 @@ async function run() {
       res.send(result);
     });
     //classes collections
+    app.get("/classes", async (req, res) => {
+      const result = await classesCollection.find().toArray();
+      res.send(result);
+    });
     app.post("/classes", async (req, res) => {
       const classes = req.body;
       console.log(classes);
       const result = await classesCollection.insertOne(classes);
+      res.send(result);
+    });
+    //users collections
+   
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      console.log(user);
+      const query = { email: user.email };
+      const alreadyUsers = await usersCollection.findOne(query);
+      console.log('alreadyUsers',alreadyUsers)
+      if (alreadyUsers) {
+        return res.send({ message: "This user is already exists!" });
+      }
+      const result = await usersCollection.insertOne(user);
       res.send(result);
     });
 
