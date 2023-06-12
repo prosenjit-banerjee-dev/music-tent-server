@@ -3,6 +3,7 @@ const app = express();
 const cors = require("cors");
 require("dotenv").config();
 const port = process.env.PORT || 5000;
+const jwt = require("jsonwebtoken");
 
 //middleware
 app.use(cors());
@@ -27,6 +28,15 @@ async function run() {
     const instructorCollection = client.db("musicDB").collection("instructors");
     const classesCollection = client.db("musicDB").collection("classes");
     const usersCollection = client.db("musicDB").collection("users");
+    const testimonialCollection = client.db("musicDB").collection("testimonials");
+
+    app.post("/jwt", (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "1hr",
+      });
+      res.send({ token });
+    });
 
     //instructor collections
     app.get("/instructors", async (req, res) => {
@@ -40,9 +50,38 @@ async function run() {
     });
     app.post("/classes", async (req, res) => {
       const classes = req.body;
-      console.log(classes);
       const result = await classesCollection.insertOne(classes);
       res.send(result);
+    });
+
+    app.patch("/classes/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const filter = { _id: new ObjectId(id) };
+      const query = req.body.status;
+      console.log(query);
+      if (query === "approved") {
+        const updateStatus = {
+          $set: {
+            status: "approved",
+          },
+        };
+        const result = await classesCollection.updateOne(filter, updateStatus);
+        return res.send(result);
+      }
+      if (query === "deny") {
+        const updateStatus = {
+          $set: {
+            status: "deny",
+          },
+        };
+        const result = await classesCollection.updateOne(filter, updateStatus);
+        return res.send(result);
+      }
+      // const alreadyAdmin = await usersCollection.findOne(query);
+      // if (alreadyAdmin) {
+      //   return res.send({ message: "This user is already admin!" });
+      // }
     });
     //users collections
     app.get("/users", async (req, res) => {
@@ -54,38 +93,46 @@ async function run() {
       console.log(user);
       const query = { email: user.email };
       const alreadyUsers = await usersCollection.findOne(query);
-      console.log("alreadyUsers", alreadyUsers);
       if (alreadyUsers) {
         return res.send({ message: "This user is already exists!" });
       }
       const result = await usersCollection.insertOne(user);
       res.send(result);
     });
-
     app.patch("/users/:id", async (req, res) => {
       const id = req.params.id;
       console.log(id);
       const filter = { _id: new ObjectId(id) };
       const query = req.body.role;
       console.log(query);
-      if (query === 'instructor') {
-        console.log('make instructor');
-        return res.send({ message: "making!" });
+      if (query === "instructor") {
+        const updateRole = {
+          $set: {
+            role: "instructor",
+          },
+        };
+        const result = await usersCollection.updateOne(filter, updateRole);
+        return res.send(result);
+      }
+      if (query === "admin") {
+        const updateRole = {
+          $set: {
+            role: "admin",
+          },
+        };
+        const result = await usersCollection.updateOne(filter, updateRole);
+        return res.send(result);
       }
       // const alreadyAdmin = await usersCollection.findOne(query);
       // if (alreadyAdmin) {
       //   return res.send({ message: "This user is already admin!" });
       // }
-      // const updateRole = {
-      //   $set: {
-      //     role: "admin",
-      //   },
-      // };
-      // const result = await usersCollection.updateOne(
-      //   filter,
-      //   updateRole,
-      // );
-      // res.send(result);
+    });
+
+    //Testimonials
+    app.get("/testimonials", async (req, res) => {
+      const result = await testimonialCollection.find().toArray();
+      res.send(result);
     });
 
     // Send a ping to confirm a successful connection
