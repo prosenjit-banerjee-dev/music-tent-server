@@ -29,7 +29,7 @@ async function run() {
     const classesCollection = client.db("musicDB").collection("classes");
     const selectClassCollection = client
       .db("musicDB")
-      .collection("selectClasses");
+      .collection("selectedClasses");
     const usersCollection = client.db("musicDB").collection("users");
 
     // pre build
@@ -101,9 +101,19 @@ async function run() {
       }
     });
     // Select Classes
-    app.post("/selectclasses", async (req, res) => {
-      const selectedClasses = req.body;
-      const result = await selectClassCollection.insertOne(selectedClasses);
+    app.get("/selectedclasses", async (req, res) => {
+      const email = req.query.email;
+      console.log(email);
+      if (!email) {
+        res.send([]);
+      }
+      const query = { email: email };
+      const result = await selectClassCollection.find(query).toArray();
+      res.send(result);
+    });
+    app.post("/selectedclasses", async (req, res) => {
+      const myClass = req.body;
+      const result = await selectClassCollection.insertOne(myClass);
       res.send(result);
     });
     //users collections
