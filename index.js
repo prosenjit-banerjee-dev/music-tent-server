@@ -103,7 +103,6 @@ async function run() {
     // Select Classes
     app.get("/selectedclasses", async (req, res) => {
       const email = req.query.email;
-      console.log(email);
       if (!email) {
         res.send([]);
       }
@@ -113,7 +112,14 @@ async function run() {
     });
     app.post("/selectedclasses", async (req, res) => {
       const myClass = req.body;
+      
       const result = await selectClassCollection.insertOne(myClass);
+      res.send(result);
+    });
+    app.delete("/selectedclasses/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await selectClassCollection.deleteOne(query);
       res.send(result);
     });
     //users collections
