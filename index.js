@@ -25,10 +25,21 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
-    const instructorCollection = client.db("musicDB").collection("instructors");
+    //  dynamic
     const classesCollection = client.db("musicDB").collection("classes");
+    const selectClassCollection = client
+      .db("musicDB")
+      .collection("selectClasses");
     const usersCollection = client.db("musicDB").collection("users");
-    const testimonialCollection = client.db("musicDB").collection("testimonials");
+
+    // pre build
+    const instructorCollection = client.db("musicDB").collection("instructors");
+    const testimonialCollection = client
+      .db("musicDB")
+      .collection("testimonials");
+    const popularClassesCollection = client
+      .db("musicDB")
+      .collection("popularClasses");
 
     app.post("/jwt", (req, res) => {
       const user = req.body;
@@ -38,6 +49,11 @@ async function run() {
       res.send({ token });
     });
 
+    //popular  Classes
+    app.get("/popularClasses", async (req, res) => {
+      const result = await popularClassesCollection.find().toArray();
+      res.send(result);
+    });
     //instructor collections
     app.get("/instructors", async (req, res) => {
       const result = await instructorCollection.find().toArray();
@@ -45,6 +61,11 @@ async function run() {
     });
     //classes collections
     app.get("/classes", async (req, res) => {
+      const result = await classesCollection.find().toArray();
+      res.send(result);
+    });
+    app.get("/classes/approved", async (req, res) => {
+      const query = { status: "approved" };
       const result = await classesCollection.find().toArray();
       res.send(result);
     });
@@ -78,10 +99,12 @@ async function run() {
         const result = await classesCollection.updateOne(filter, updateStatus);
         return res.send(result);
       }
-      // const alreadyAdmin = await usersCollection.findOne(query);
-      // if (alreadyAdmin) {
-      //   return res.send({ message: "This user is already admin!" });
-      // }
+    });
+    // Select Classes
+    app.post("/selectclasses", async (req, res) => {
+      const selectedClasses = req.body;
+      const result = await selectClassCollection.insertOne(selectedClasses);
+      res.send(result);
     });
     //users collections
     app.get("/users", async (req, res) => {
