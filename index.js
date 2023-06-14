@@ -49,6 +49,7 @@ async function run() {
       .db("musicDB")
       .collection("selectedClasses");
     const usersCollection = client.db("musicDB").collection("users");
+    const paymentCollection = client.db("musicDB").collection("payment");
 
     // pre build
     const instructorCollection = client.db("musicDB").collection("instructors");
@@ -210,6 +211,11 @@ async function run() {
       // if (alreadyAdmin) {
       //   return res.send({ message: "This user is already admin!" });
       // }
+    });
+    app.post("/payments", async (req, res) => {
+      const payments = req.body;
+      const result = await classesCollection.insertOne(payments);
+      res.send(result);
     });
 
     //Testimonials
