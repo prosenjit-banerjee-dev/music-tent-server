@@ -42,7 +42,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    
     //  dynamic
     const classesCollection = client.db("musicDB").collection("classes");
     const selectClassCollection = client
@@ -218,10 +218,10 @@ async function run() {
       res.send(result);
     });
     //create payment intent
-    app.post("/create-payment-intent", async (req, res) => {
+    app.post("/create-payment-intent",verifyJWT, async (req, res) => {
       const { price } = req.body;
       const amount = price * 100;
-      const paymentIntent = await stripe.create({
+      const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
         currency: "usd",
         payment_method_types: ["card"],
