@@ -66,7 +66,11 @@ async function run() {
 
     //popular  Classes
     app.get("/popularClasses", async (req, res) => {
-      const result = await classesCollection.find().sort({'enrolledStudents':-1}).limit(6).toArray();
+      const result = await classesCollection
+        .find()
+        .sort({ enrolledStudents: -1 })
+        .limit(6)
+        .toArray();
       res.send(result);
     });
     //instructor collections
@@ -145,6 +149,26 @@ async function run() {
     //users collections
     app.get("/users", async (req, res) => {
       const result = await usersCollection.find().toArray();
+      res.send(result);
+    });
+    app.get("/users/admin/:email", verifyJWT, async (req, res) => {
+      const getEmail = req.params.email;
+      if (req.decoded.email !== getEmail) {
+        res.send({ admin: false });
+      }
+      const query = { email: getEmail };
+      const user = await usersCollection.findOne(query);
+      const result = { admin: user?.role === "admin" };
+      res.send(result);
+    });
+    app.get("/users/instructor/:email", verifyJWT, async (req, res) => {
+      const getEmail = req.params.email;
+      if (req.decoded.email !== getEmail) {
+        res.send({ instructor: false });
+      }
+      const query = { email: getEmail };
+      const user = await usersCollection.findOne(query);
+      const result = { instructor: user?.role === "instructor" };
       res.send(result);
     });
     app.post("/users", async (req, res) => {
